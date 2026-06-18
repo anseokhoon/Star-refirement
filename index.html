@@ -16,26 +16,33 @@ const HTML = `<!DOCTYPE html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KB스타웰스매니저 은퇴 설계 계산기</title>
     
+    <!-- Tailwind CSS (별도 설치 없이 디자인을 입혀주는 CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React 및 ReactDOM CDN -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- JSX 컴파일을 위한 Babel CDN -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body class="bg-slate-50 selection:bg-yellow-200">
     <div id="root"></div>
 
-    <script type="text/babel" data-presets="react">
+    <script type="text/babel">
         const { useState, useEffect } = React;
 
         const RetirementCalculator = () => {
+            // 입력 상태 관리 (기본값은 프롬프트 및 대본 예시 기준)
             const [currentAge, setCurrentAge] = useState(40);
             const [retirementAge, setRetirementAge] = useState(62);
-            const [monthlyExpense, setMonthlyExpense] = useState(500);
-            const [inflationRate, setInflationRate] = useState(3.0);
-            const [withdrawalRate, setWithdrawalRate] = useState(5.0);
-            const [investmentReturnRate, setInvestmentReturnRate] = useState(7.0);
-            const [useBenzMark, setUseBenzMark] = useState(false);
+            const [monthlyExpense, setMonthlyExpense] = useState(500); // 단위: 만원
+            const [inflationRate, setInflationRate] = useState(3.0); // %
+            const [withdrawalRate, setWithdrawalRate] = useState(5.0); // %
+            const [investmentReturnRate, setInvestmentReturnRate] = useState(7.0); // %
+            const [useBenzMark, setUseBenzMark] = useState(false); // 자산 3분할(벤츠 마크) 적용 여부
 
+            // 결과 상태 관리
             const [results, setResults] = useState({
                 yearsToRetire: 0,
                 futureMonthlyExpense: 0,
@@ -45,8 +52,10 @@ const HTML = `<!DOCTYPE html>
                 monthlySavings: 0,
             });
 
+            // 금액 포맷팅 헬퍼 함수 (한국어 읽기 편하게 변환)
             const formatKRW = (number) => {
                 if (number === 0 || isNaN(number)) return '0원';
+                // 만원 단위로 들어온 숫자를 실제 금액으로 변환
                 const actualAmount = number * 10000; 
                 
                 const uk = Math.floor(actualAmount / 100000000);
@@ -60,19 +69,30 @@ const HTML = `<!DOCTYPE html>
                 return result.trim() + '원';
             };
 
+            // 일반 숫자 콤마 포맷팅 (만원 단위 표시용)
             const formatNumber = (num) => {
                 return Math.round(num).toLocaleString();
             };
 
+            // 계산 로직
             useEffect(() => {
                 const years = Math.max(0, retirementAge - currentAge);
+                
+                // 1. 물가 상승률 반영한 미래의 월 생활비
                 const futureMonthly = monthlyExpense * Math.pow(1 + inflationRate / 100, years);
+                
+                // 2. 미래의 연 생활비
                 const futureAnnual = futureMonthly * 12;
+                
+                // 3. 목표 은퇴 자금 (연 생활비 / 기대수익률)
                 const target = futureAnnual / (withdrawalRate / 100);
+                
+                // 4. 금융 투자 목표액 (벤츠 마크 적용 시 1/3)
                 const investmentTargetAmount = useBenzMark ? target / 3 : target;
                 
-                const r = investmentReturnRate / 100 / 12;
-                const n = years * 12;
+                // 5. 매월 저축액 계산 (FV = PMT * (((1 + r)^n - 1) / r))
+                const r = investmentReturnRate / 100 / 12; // 월 이자율
+                const n = years * 12; // 총 납입 개월 수
                 
                 let requiredMonthlySavings = 0;
                 if (n > 0) {
@@ -93,26 +113,11 @@ const HTML = `<!DOCTYPE html>
                 });
             }, [currentAge, retirementAge, monthlyExpense, inflationRate, withdrawalRate, investmentReturnRate, useBenzMark]);
 
-            const benzLabelClass = useBenzMark 
-                ? 'flex items-center cursor-pointer p-4 sm:p-5 rounded-xl border-2 transition-all shadow-sm border-[#FFCC00] bg-yellow-50/50'
-                : 'flex items-center cursor-pointer p-4 sm:p-5 rounded-xl border-2 transition-all shadow-sm border-gray-200 bg-white hover:border-gray-300';
-            
-            const benzToggleBg = useBenzMark
-                ? 'block w-12 h-7 rounded-full transition-colors bg-[#FFCC00]'
-                : 'block w-12 h-7 rounded-full transition-colors bg-gray-300';
-            
-            const benzToggleDot = useBenzMark
-                ? 'absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-200 translate-x-5 shadow-sm'
-                : 'absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-200';
-
-            const benzTextClass = useBenzMark
-                ? 'block text-sm sm:text-base font-bold text-[#3b3a39]'
-                : 'block text-sm sm:text-base font-bold text-gray-700';
-
             return (
                 <div className="min-h-screen p-3 sm:p-4 md:p-8 font-sans text-gray-800">
                     <div className="max-w-5xl mx-auto space-y-5 sm:space-y-6">
                         
+                        {/* 헤더 (KB스타웰스매니저 프리미엄 테마) */}
                         <header className="bg-[#3b3a39] text-white p-6 sm:p-8 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center relative overflow-hidden">
                             <div className="absolute -right-10 -top-10 opacity-10">
                                 <svg width="200" height="200" viewBox="0 0 24 24" fill="#FFCC00">
@@ -139,6 +144,7 @@ const HTML = `<!DOCTYPE html>
 
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                             
+                            {/* 입력 폼 영역 */}
                             <div className="lg:col-span-5 space-y-6 bg-white p-5 sm:p-7 rounded-2xl shadow-lg border border-gray-100">
                                 <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center border-b pb-4">
                                     <span className="bg-[#3b3a39] text-[#FFCC00] w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold shadow-sm">1</span>
@@ -202,14 +208,14 @@ const HTML = `<!DOCTYPE html>
                                         </div>
                                     </div>
 
-                                    <label className={benzLabelClass}>
+                                    <label className={\`flex items-center cursor-pointer p-4 sm:p-5 rounded-xl border-2 transition-all shadow-sm \${useBenzMark ? 'border-[#FFCC00] bg-yellow-50/50' : 'border-gray-200 bg-white hover:border-gray-300'}\`}>
                                         <div className="relative flex-shrink-0">
                                             <input type="checkbox" className="sr-only" checked={useBenzMark} onChange={() => setUseBenzMark(!useBenzMark)} />
-                                            <div className={benzToggleBg}></div>
-                                            <div className={benzToggleDot}></div>
+                                            <div className={\`block w-12 h-7 rounded-full transition-colors \${useBenzMark ? 'bg-[#FFCC00]' : 'bg-gray-300'}\`}></div>
+                                            <div className={\`absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-200 \${useBenzMark ? 'translate-x-5 shadow-sm' : ''}\`}></div>
                                         </div>
                                         <div className="ml-4">
-                                            <span className={benzTextClass}>벤츠 마크 적용 (자산 3분할)</span>
+                                            <span className={\`block text-sm sm:text-base font-bold \${useBenzMark ? 'text-[#3b3a39]' : 'text-gray-700'}\`}>벤츠 마크 적용 (자산 3분할)</span>
                                             <span className="block text-xs sm:text-sm text-gray-500 mt-1">부동산/현금 외, 목표액의 1/3만 투자로 준비</span>
                                         </div>
                                     </label>
@@ -217,8 +223,10 @@ const HTML = `<!DOCTYPE html>
                                 </div>
                             </div>
 
+                            {/* 결과 출력 영역 */}
                             <div className="lg:col-span-7 space-y-5">
                                 
+                                {/* Step 1 */}
                                 <div className="bg-white p-5 sm:p-7 rounded-2xl shadow-md border-l-4 border-l-gray-400">
                                     <h3 className="text-sm font-bold text-gray-500 mb-2">Step 1. 물가상승 반영</h3>
                                     <p className="text-gray-800 mb-4 sm:text-lg break-keep leading-relaxed">
@@ -237,6 +245,7 @@ const HTML = `<!DOCTYPE html>
                                     </div>
                                 </div>
 
+                                {/* Step 2 */}
                                 <div className="bg-white p-5 sm:p-7 rounded-2xl shadow-md border-l-4 border-l-[#FFCC00] relative overflow-hidden">
                                     <h3 className="text-sm font-bold text-gray-500 mb-2">Step 2. 목표 은퇴 자금 산출</h3>
                                     <p className="text-gray-800 mb-4 sm:text-lg break-keep leading-relaxed">
@@ -255,6 +264,7 @@ const HTML = `<!DOCTYPE html>
                                     </div>
                                 </div>
 
+                                {/* Step 3 */}
                                 <div className="bg-[#3b3a39] text-white p-6 sm:p-8 rounded-2xl shadow-xl relative mt-8 sm:mt-10 overflow-visible">
                                     <div className="absolute -top-4 sm:-top-5 left-6 bg-[#FFCC00] text-[#3b3a39] text-xs sm:text-sm font-extrabold px-4 py-1.5 sm:py-2 rounded-full shadow-lg border-2 border-white">
                                         KB Action Plan
@@ -297,4 +307,5 @@ const HTML = `<!DOCTYPE html>
         root.render(<RetirementCalculator />);
     </script>
 </body>
-</html>`;
+</html>
+`;
