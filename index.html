@@ -1,13 +1,27 @@
-<!DOCTYPE html>
+// =====================================================
+// KB스타웰스매니저 은퇴 설계 계산기 - Cloudflare Worker
+// =====================================================
+
+export default {
+  async fetch(request, env, ctx) {
+    return new Response(HTML, {
+      headers: {
+        "content-type": "text/html;charset=UTF-8",
+        "cache-control": "public, max-age=300",
+        "x-content-type-options": "nosniff",
+      },
+    });
+  },
+};
+
+// HTML은 String.raw로 감싸서 백슬래시/달러기호 충돌을 원천 차단
+const HTML = String.raw`<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="KB스타웰스매니저 은퇴 설계 계산기 - 고객님의 완벽한 노후를 위한 맞춤형 재무 로드맵">
+<meta name="description" content="KB스타웰스매니저 은퇴 설계 계산기">
 <meta name="theme-color" content="#3b3a39">
-<meta property="og:title" content="KB스타웰스매니저 은퇴 설계 계산기">
-<meta property="og:description" content="고객님의 완벽한 노후를 위한 맞춤형 재무 로드맵">
-<meta property="og:type" content="website">
 <title>KB스타웰스매니저 은퇴 설계 계산기</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
@@ -18,271 +32,106 @@
     background: #f8fafc;
     color: #1f2937;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     line-height: 1.5;
   }
-  .kb-container {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 16px;
-  }
-  @media (min-width: 768px) {
-    .kb-container { padding: 32px 24px; }
-  }
+  .kb-container { max-width: 960px; margin: 0 auto; padding: 16px; }
+  @media (min-width: 768px) { .kb-container { padding: 32px 24px; } }
 
-  /* Header */
   .kb-header {
     background: linear-gradient(135deg, #3b3a39 0%, #2a2928 100%);
-    color: #fff;
-    padding: 28px 24px;
-    border-radius: 20px;
-    position: relative;
-    overflow: hidden;
-    margin-bottom: 20px;
+    color: #fff; padding: 28px 24px; border-radius: 20px;
+    position: relative; overflow: hidden; margin-bottom: 20px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.12);
   }
   .kb-header::before {
-    content: '★';
-    position: absolute;
-    right: -30px;
-    top: -30px;
-    font-size: 220px;
-    color: #FFCC00;
-    opacity: 0.08;
-    line-height: 1;
+    content: '★'; position: absolute; right: -30px; top: -30px;
+    font-size: 220px; color: #FFCC00; opacity: 0.08; line-height: 1;
     pointer-events: none;
   }
-  .kb-brand {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    position: relative;
-  }
-  .kb-brand-star {
-    color: #FFCC00;
-    font-size: 26px;
-    filter: drop-shadow(0 2px 4px rgba(255,204,0,0.3));
-  }
-  .kb-brand-text {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-  }
+  .kb-brand { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; position: relative; }
+  .kb-brand-star { color: #FFCC00; font-size: 26px; }
+  .kb-brand-text { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
   .kb-brand-text .light { font-weight: 300; }
-  .kb-title {
-    font-size: 28px;
-    font-weight: 700;
-    margin: 6px 0 8px;
-    position: relative;
-    letter-spacing: -0.025em;
-  }
+  .kb-title { font-size: 28px; font-weight: 700; margin: 6px 0 8px; position: relative; letter-spacing: -0.025em; }
   @media (min-width: 768px) { .kb-title { font-size: 34px; } }
-  .kb-subtitle {
-    color: #d1d5db;
-    font-size: 14px;
-    font-weight: 300;
-    position: relative;
-  }
+  .kb-subtitle { color: #d1d5db; font-size: 14px; font-weight: 300; position: relative; }
   .kb-years-box {
-    margin-top: 20px;
-    background: rgba(42,41,40,0.7);
-    padding: 14px 20px;
-    border-radius: 14px;
-    border: 1px solid #4a4948;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    position: relative;
-    backdrop-filter: blur(10px);
+    margin-top: 20px; background: rgba(42,41,40,0.7);
+    padding: 14px 20px; border-radius: 14px;
+    border: 1px solid #4a4948; display: inline-flex;
+    align-items: center; gap: 10px; position: relative;
   }
   .kb-years-label { font-size: 13px; color: #d1d5db; }
-  .kb-years-val {
-    font-size: 30px;
-    font-weight: 800;
-    color: #FFCC00;
-    letter-spacing: -0.02em;
-  }
-  .kb-years-unit {
-    font-size: 16px;
-    color: #d1d5db;
-    font-weight: 500;
-  }
+  .kb-years-val { font-size: 30px; font-weight: 800; color: #FFCC00; letter-spacing: -0.02em; }
+  .kb-years-unit { font-size: 16px; color: #d1d5db; font-weight: 500; }
 
-  /* Grid */
-  .kb-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  @media (min-width: 1024px) {
-    .kb-grid { grid-template-columns: 5fr 7fr; gap: 20px; }
-  }
+  .kb-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 1024px) { .kb-grid { grid-template-columns: 5fr 7fr; gap: 20px; } }
 
-  /* Card (Input Form) */
   .kb-card {
-    background: #fff;
-    padding: 24px;
-    border-radius: 18px;
+    background: #fff; padding: 24px; border-radius: 18px;
     box-shadow: 0 4px 14px rgba(0,0,0,0.05);
     border: 1px solid #f1f5f9;
   }
   .kb-card-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: #1f2937;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-bottom: 1px solid #e5e7eb;
-    padding-bottom: 16px;
-    margin-bottom: 20px;
+    font-size: 18px; font-weight: 700; color: #1f2937;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid #e5e7eb; padding-bottom: 16px; margin-bottom: 20px;
     letter-spacing: -0.02em;
   }
   .kb-num-circle {
-    width: 32px;
-    height: 32px;
-    background: #3b3a39;
-    color: #FFCC00;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 800;
-    flex-shrink: 0;
+    width: 32px; height: 32px; background: #3b3a39; color: #FFCC00;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; flex-shrink: 0;
   }
 
-  .kb-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 18px;
-  }
-  .kb-field-label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 8px;
-  }
+  .kb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+  .kb-field-label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 8px; }
   .kb-input-wrap {
-    display: flex;
-    border: 1.5px solid #d1d5db;
-    border-radius: 10px;
-    overflow: hidden;
-    background: #fff;
-    transition: all 0.2s;
+    display: flex; border: 1.5px solid #d1d5db; border-radius: 10px;
+    overflow: hidden; background: #fff; transition: all 0.2s;
   }
-  .kb-input-wrap:focus-within {
-    border-color: #FFCC00;
-    box-shadow: 0 0 0 3px rgba(255,204,0,0.15);
-  }
+  .kb-input-wrap:focus-within { border-color: #FFCC00; box-shadow: 0 0 0 3px rgba(255,204,0,0.15); }
   .kb-input-wrap input {
-    flex: 1;
-    border: none;
-    outline: none;
-    padding: 11px 12px;
-    text-align: right;
-    font-size: 16px;
-    font-weight: 700;
-    color: #1f2937;
-    background: transparent;
-    width: 100%;
-    min-width: 0;
-    font-family: inherit;
+    flex: 1; border: none; outline: none; padding: 11px 12px;
+    text-align: right; font-size: 16px; font-weight: 700; color: #1f2937;
+    background: transparent; width: 100%; min-width: 0; font-family: inherit;
   }
   .kb-input-suffix {
-    background: #f9fafb;
-    padding: 0 14px;
-    display: flex;
-    align-items: center;
-    color: #4b5563;
-    font-weight: 500;
-    font-size: 14px;
-    border-left: 1px solid #e5e7eb;
-    white-space: nowrap;
+    background: #f9fafb; padding: 0 14px; display: flex; align-items: center;
+    color: #4b5563; font-weight: 500; font-size: 14px;
+    border-left: 1px solid #e5e7eb; white-space: nowrap;
   }
-  .kb-input-big input {
-    font-size: 22px;
-    font-weight: 800;
-    color: #3b3a39;
-    padding: 14px 12px;
-  }
+  .kb-input-big input { font-size: 22px; font-weight: 800; color: #3b3a39; padding: 14px 12px; }
 
-  /* Assumptions */
   .kb-assumptions {
-    background: #f9fafb;
-    padding: 18px;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    margin: 20px 0;
+    background: #f9fafb; padding: 18px; border-radius: 14px;
+    border: 1px solid #e5e7eb; margin: 20px 0;
   }
   .kb-assumptions-title {
-    font-size: 11px;
-    font-weight: 700;
-    color: #6b7280;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    font-size: 11px; font-weight: 700; color: #6b7280;
+    letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
   }
-  .kb-assumption-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-  }
+  .kb-assumption-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   .kb-assumption-row:last-child { margin-bottom: 0; }
-  .kb-assumption-label {
-    font-size: 13px;
-    color: #374151;
-    font-weight: 500;
-  }
+  .kb-assumption-label { font-size: 13px; color: #374151; font-weight: 500; }
   .kb-small-input {
-    display: flex;
-    border: 1.5px solid #d1d5db;
-    border-radius: 8px;
-    overflow: hidden;
-    width: 110px;
-    transition: all 0.2s;
+    display: flex; border: 1.5px solid #d1d5db; border-radius: 8px;
+    overflow: hidden; width: 110px; transition: all 0.2s;
   }
-  .kb-small-input:focus-within {
-    border-color: #FFCC00;
-    box-shadow: 0 0 0 2px rgba(255,204,0,0.15);
-  }
+  .kb-small-input:focus-within { border-color: #FFCC00; box-shadow: 0 0 0 2px rgba(255,204,0,0.15); }
   .kb-small-input input {
-    flex: 1;
-    border: none;
-    outline: none;
-    padding: 7px 10px;
-    text-align: right;
-    font-weight: 700;
-    color: #1f2937;
-    width: 100%;
-    min-width: 0;
-    font-family: inherit;
-    font-size: 14px;
+    flex: 1; border: none; outline: none; padding: 7px 10px;
+    text-align: right; font-weight: 700; color: #1f2937;
+    width: 100%; min-width: 0; font-family: inherit; font-size: 14px;
   }
-  .kb-small-input .kb-input-suffix {
-    padding: 0 10px;
-    font-size: 13px;
-    background: #f3f4f6;
-  }
+  .kb-small-input .kb-input-suffix { padding: 0 10px; font-size: 13px; background: #f3f4f6; }
 
-  /* Toggle */
   .kb-toggle-card {
-    display: flex;
-    align-items: center;
-    padding: 16px;
-    border-radius: 14px;
-    border: 2px solid #e5e7eb;
-    background: #fff;
-    cursor: pointer;
-    transition: all 0.25s;
-    user-select: none;
+    display: flex; align-items: center; padding: 16px; border-radius: 14px;
+    border: 2px solid #e5e7eb; background: #fff; cursor: pointer;
+    transition: all 0.25s; user-select: none;
   }
   .kb-toggle-card:hover { border-color: #d1d5db; }
   .kb-toggle-card.active {
@@ -291,75 +140,356 @@
     box-shadow: 0 4px 12px rgba(255,204,0,0.15);
   }
   .kb-toggle-switch {
-    position: relative;
-    width: 46px;
-    height: 26px;
-    background: #d1d5db;
-    border-radius: 13px;
-    flex-shrink: 0;
+    position: relative; width: 46px; height: 26px;
+    background: #d1d5db; border-radius: 13px; flex-shrink: 0;
     transition: background 0.25s;
   }
   .kb-toggle-card.active .kb-toggle-switch { background: #FFCC00; }
   .kb-toggle-knob {
-    position: absolute;
-    left: 3px;
-    top: 3px;
-    width: 20px;
-    height: 20px;
-    background: #fff;
-    border-radius: 50%;
+    position: absolute; left: 3px; top: 3px;
+    width: 20px; height: 20px; background: #fff; border-radius: 50%;
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
   .kb-toggle-card.active .kb-toggle-knob { transform: translateX(20px); }
   .kb-toggle-text { margin-left: 14px; }
-  .kb-toggle-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: #374151;
-    display: block;
-  }
+  .kb-toggle-title { font-size: 14px; font-weight: 700; color: #374151; display: block; }
   .kb-toggle-card.active .kb-toggle-title { color: #3b3a39; }
-  .kb-toggle-desc {
-    font-size: 12px;
-    color: #6b7280;
-    margin-top: 3px;
-  }
+  .kb-toggle-desc { font-size: 12px; color: #6b7280; margin-top: 3px; }
 
-  /* Steps */
   .kb-step {
-    background: #fff;
-    padding: 22px;
-    border-radius: 18px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
-    margin-bottom: 16px;
+    background: #fff; padding: 22px; border-radius: 18px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05); margin-bottom: 16px;
     border-left: 4px solid #9ca3af;
   }
   .kb-step.step2 { border-left-color: #FFCC00; }
   .kb-step.step3 {
     background: linear-gradient(135deg, #3b3a39 0%, #2a2928 100%);
-    color: #fff;
-    border-left: none;
-    position: relative;
-    margin-top: 36px;
-    padding: 32px 26px 26px;
+    color: #fff; border-left: none; position: relative;
+    margin-top: 36px; padding: 32px 26px 26px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
   }
-  .kb-step-tag {
-    font-size: 12px;
-    font-weight: 700;
-    color: #6b7280;
-    margin-bottom: 8px;
-    letter-spacing: 0.02em;
-  }
+  .kb-step-tag { font-size: 12px; font-weight: 700; color: #6b7280; margin-bottom: 8px; }
   .kb-step.step3 .kb-step-tag { color: #9ca3af; margin-top: 8px; }
-  .kb-step-text {
-    color: #1f2937;
-    line-height: 1.7;
-    margin-bottom: 16px;
-    font-size: 15px;
-    word-break: keep-all;
-  }
+  .kb-step-text { color: #1f2937; line-height: 1.7; margin-bottom: 16px; font-size: 15px; word-break: keep-all; }
   .kb-step.step3 .kb-step-text { color: #e5e7eb; font-size: 14px; }
   .kb-emphasis { font-weight: 700; color: #3b3a39; }
-  .kb-under
+  .kb-underline { font-weight: 700; border-bottom: 2px solid #FFCC00; padding-bottom: 1px; }
+
+  .kb-result-row { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+  @media (min-width: 600px) { .kb-result-row { flex-direction: row; align-items: center; gap: 12px; } }
+  .kb-result-box {
+    background: #f9fafb; padding: 16px; border-radius: 12px;
+    border: 1px solid #e5e7eb; flex: 1; text-align: center;
+  }
+  .kb-result-box.gold { background: #fcfbf9; border-color: #e8e4db; }
+  .kb-result-label { font-size: 12px; color: #6b7280; margin-bottom: 6px; }
+  .kb-result-box.gold .kb-result-label { color: #8c8273; }
+  .kb-result-val { font-size: 22px; font-weight: 700; color: #1f2937; letter-spacing: -0.02em; }
+  .kb-result-box.gold .kb-result-val { color: #5c5446; }
+  .kb-mult { font-weight: 700; color: #d1d5db; text-align: center; font-size: 14px; }
+
+  .kb-target-box {
+    background: linear-gradient(135deg, #fbfaf8 0%, #faf8f3 100%);
+    padding: 22px; border-radius: 14px;
+    border: 1px solid #e8e4db; text-align: center;
+  }
+  .kb-target-label { font-size: 13px; color: #4b5563; font-weight: 600; margin-bottom: 10px; }
+  .kb-target-val { font-size: 34px; font-weight: 800; color: #3b3a39; letter-spacing: -0.03em; }
+  @media (min-width: 768px) { .kb-target-val { font-size: 40px; } }
+  .kb-benz-badge {
+    margin-top: 14px; display: inline-block; font-size: 13px; color: #3b3a39;
+    background: rgba(255,204,0,0.2); padding: 8px 16px; border-radius: 999px;
+    border: 1px solid rgba(255,204,0,0.4); font-weight: 500;
+  }
+
+  .kb-action-tag {
+    position: absolute; top: -16px; left: 24px;
+    background: #FFCC00; color: #3b3a39;
+    font-size: 12px; font-weight: 800;
+    padding: 8px 16px; border-radius: 999px;
+    border: 2px solid #fff; box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  }
+  .kb-action-row {
+    display: flex; flex-direction: column; gap: 14px;
+    border-top: 1px solid #4b5563; padding-top: 20px; margin-top: 6px;
+  }
+  @media (min-width: 600px) {
+    .kb-action-row { flex-direction: row; justify-content: space-between; align-items: center; }
+  }
+  .kb-action-label { color: #9ca3af; font-size: 13px; margin-bottom: 4px; }
+  .kb-action-val {
+    font-size: 38px; font-weight: 800; color: #FFCC00;
+    letter-spacing: -0.03em; text-shadow: 0 2px 8px rgba(255,204,0,0.2);
+  }
+  @media (min-width: 768px) { .kb-action-val { font-size: 44px; } }
+  .kb-period-box {
+    background: #2a2928; padding: 14px 20px; border-radius: 12px;
+    border: 1px solid #4b5563; text-align: center;
+  }
+  .kb-period-label { font-size: 11px; color: #9ca3af; margin-bottom: 4px; }
+  .kb-period-val { font-size: 18px; font-weight: 700; color: #fff; }
+
+  .kb-tip-box {
+    margin-top: 20px; padding: 16px;
+    background: linear-gradient(to right, #1f2937, #2a2928);
+    border-radius: 12px; border-left: 4px solid #FFCC00;
+    color: #e5e7eb; font-size: 14px; line-height: 1.7; word-break: keep-all;
+  }
+  .kb-tip-amount { color: #FFCC00; font-weight: 700; font-size: 16px; margin: 0 4px; }
+
+  .kb-disclaimer {
+    text-align: center; font-size: 11px; color: #9ca3af;
+    margin-top: 28px; padding: 0 12px; word-break: keep-all;
+  }
+</style>
+</head>
+<body>
+
+<div class="kb-container">
+
+  <header class="kb-header">
+    <div class="kb-brand">
+      <span class="kb-brand-star">★</span>
+      <span class="kb-brand-text">KB<span class="light">스타</span>웰스매니저</span>
+    </div>
+    <h1 class="kb-title">은퇴 설계 계산기</h1>
+    <p class="kb-subtitle">고객님의 완벽한 노후를 위한 맞춤형 재무 로드맵</p>
+    <div class="kb-years-box">
+      <span class="kb-years-label">은퇴까지 남은 기간</span>
+      <span class="kb-years-val" id="kb-years">22</span><span class="kb-years-unit">년</span>
+    </div>
+  </header>
+
+  <main class="kb-grid">
+
+    <section class="kb-card">
+      <h2 class="kb-card-title">
+        <span class="kb-num-circle">1</span>
+        고객 재무 정보 입력
+      </h2>
+
+      <div class="kb-row">
+        <div>
+          <label class="kb-field-label" for="kb-currentAge">현재 나이</label>
+          <div class="kb-input-wrap">
+            <input type="number" id="kb-currentAge" value="40" min="0" max="100">
+            <div class="kb-input-suffix">세</div>
+          </div>
+        </div>
+        <div>
+          <label class="kb-field-label" for="kb-retireAge">은퇴 예상 나이</label>
+          <div class="kb-input-wrap">
+            <input type="number" id="kb-retireAge" value="62" min="0" max="100">
+            <div class="kb-input-suffix">세</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 4px;">
+        <label class="kb-field-label" for="kb-monthlyExpense">필요 생활비 (현재 가치 기준)</label>
+        <div class="kb-input-wrap kb-input-big">
+          <input type="number" id="kb-monthlyExpense" value="500" min="0">
+          <div class="kb-input-suffix">만 원 / 월</div>
+        </div>
+      </div>
+
+      <div class="kb-assumptions">
+        <div class="kb-assumptions-title">⚙ 가정 변수 (Assumptions)</div>
+
+        <div class="kb-assumption-row">
+          <label class="kb-assumption-label" for="kb-inflation">물가 상승률</label>
+          <div class="kb-small-input">
+            <input type="number" step="0.1" id="kb-inflation" value="3.0">
+            <div class="kb-input-suffix">%</div>
+          </div>
+        </div>
+
+        <div class="kb-assumption-row">
+          <label class="kb-assumption-label" for="kb-withdrawal">은퇴 후 인출률</label>
+          <div class="kb-small-input">
+            <input type="number" step="0.1" id="kb-withdrawal" value="5.0">
+            <div class="kb-input-suffix">%</div>
+          </div>
+        </div>
+
+        <div class="kb-assumption-row">
+          <label class="kb-assumption-label" for="kb-return">투자 수익률</label>
+          <div class="kb-small-input">
+            <input type="number" step="0.1" id="kb-return" value="7.0">
+            <div class="kb-input-suffix">%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kb-toggle-card" id="kb-benz-toggle" role="button" tabindex="0" aria-pressed="false">
+        <div class="kb-toggle-switch">
+          <div class="kb-toggle-knob"></div>
+        </div>
+        <div class="kb-toggle-text">
+          <span class="kb-toggle-title">벤츠 마크 적용 (자산 3분할)</span>
+          <span class="kb-toggle-desc">부동산/현금 외, 목표액의 1/3만 투자로 준비</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <article class="kb-step">
+        <div class="kb-step-tag">Step 1. 물가상승 반영</div>
+        <p class="kb-step-text">
+          <span class="kb-emphasis"><span id="kb-years2">22</span>년 후</span> 은퇴 시점에
+          현재의 <span class="kb-underline"><span id="kb-cur-expense">500</span>만원</span>과 동일한 가치를 지니려면?
+        </p>
+        <div class="kb-result-row">
+          <div class="kb-result-box">
+            <div class="kb-result-label">필요 월 생활비</div>
+            <div class="kb-result-val" id="kb-future-monthly">-</div>
+          </div>
+          <div class="kb-mult">× 12 =</div>
+          <div class="kb-result-box gold">
+            <div class="kb-result-label">필요 연 생활비</div>
+            <div class="kb-result-val" id="kb-future-annual">-</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="kb-step step2">
+        <div class="kb-step-tag">Step 2. 목표 은퇴 자금 산출</div>
+        <p class="kb-step-text">
+          원금을 깎아먹지 않고 매년 <span style="font-weight:700;color:#5c5446;" id="kb-future-annual2">-</span>의 이자 수익을 얻기 위해 모아야 할 총 자산입니다.
+          <span style="color:#6b7280;font-size:13px;">(수익률 <span id="kb-withdrawal2">5.0</span>%)</span>
+        </p>
+        <div class="kb-target-box">
+          <div class="kb-target-label">필요한 총 목표 은퇴 자금</div>
+          <div class="kb-target-val" id="kb-target">-</div>
+          <div class="kb-benz-badge" id="kb-benz-badge" style="display:none;">
+            💡 벤츠 마크 반영: 금융투자 목표액 <strong id="kb-benz-target">-</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="kb-step step3">
+        <div class="kb-action-tag">KB Action Plan</div>
+        <div class="kb-step-tag">Step 3. 솔루션 제안</div>
+        <p class="kb-step-text">
+          <span id="kb-years3">22</span>년 동안 연 <span id="kb-return2">7.0</span>%의 수익률로
+          <span style="color:#fff;font-weight:700;" id="kb-invest-target">-</span>을 모으기 위해 당장 시작해야 할 매월 저축액입니다.
+        </p>
+        <div class="kb-action-row">
+          <div>
+            <div class="kb-action-label">매월 투자해야 할 금액</div>
+            <div class="kb-action-val" id="kb-monthly-savings">-</div>
+          </div>
+          <div class="kb-period-box">
+            <div class="kb-period-label">총 투자 기간</div>
+            <div class="kb-period-val"><span id="kb-total-months">-</span>개월</div>
+          </div>
+        </div>
+        <div class="kb-tip-box">
+          "고객님, 부담스럽게 무리하지 마시고 여유 자금의 절반인
+          <span class="kb-tip-amount">월 <span id="kb-half-savings">-</span></span>
+          부터 시작하시죠. 점진적으로 늘려가도록 곁에서 돕겠습니다."
+        </div>
+      </article>
+    </section>
+
+  </main>
+
+  <p class="kb-disclaimer">
+    * 본 계산기는 세금, 수수료, 연금 수령 방식 등을 제외한 단순 복리 모델을 기반으로 하며, 실제 수익을 보장하지 않습니다.
+  </p>
+
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  function $(id) { return document.getElementById(id); }
+
+  function formatKRW(num) {
+    if (num === 0 || isNaN(num) || num == null) return '0원';
+    var actual = num * 10000;
+    var uk = Math.floor(actual / 100000000);
+    var man = Math.floor((actual % 100000000) / 10000);
+    var result = '';
+    if (uk > 0) result += uk.toLocaleString() + '억 ';
+    if (man > 0) result += man.toLocaleString() + '만 ';
+    if (uk === 0 && man === 0) return Math.floor(actual).toLocaleString() + '원';
+    return result.trim() + '원';
+  }
+
+  var useBenz = false;
+
+  function calc() {
+    var currentAge = Number($('kb-currentAge').value) || 0;
+    var retireAge = Number($('kb-retireAge').value) || 0;
+    var monthlyExpense = Number($('kb-monthlyExpense').value) || 0;
+    var inflation = Number($('kb-inflation').value) || 0;
+    var withdrawal = Number($('kb-withdrawal').value) || 0;
+    var ret = Number($('kb-return').value) || 0;
+
+    var years = Math.max(0, retireAge - currentAge);
+    var futureMonthly = monthlyExpense * Math.pow(1 + inflation/100, years);
+    var futureAnnual = futureMonthly * 12;
+    var target = withdrawal > 0 ? futureAnnual / (withdrawal/100) : 0;
+    var investTarget = useBenz ? target / 3 : target;
+
+    var r = ret / 100 / 12;
+    var n = years * 12;
+    var monthlySavings = 0;
+    if (n > 0) {
+      if (r === 0) monthlySavings = investTarget / n;
+      else monthlySavings = (investTarget * r) / (Math.pow(1 + r, n) - 1);
+    }
+
+    $('kb-years').textContent = years;
+    $('kb-years2').textContent = years;
+    $('kb-years3').textContent = years;
+    $('kb-cur-expense').textContent = Math.round(monthlyExpense).toLocaleString();
+    $('kb-future-monthly').textContent = formatKRW(futureMonthly);
+    $('kb-future-annual').textContent = formatKRW(futureAnnual);
+    $('kb-future-annual2').textContent = formatKRW(futureAnnual);
+    $('kb-withdrawal2').textContent = withdrawal.toFixed(1);
+    $('kb-target').textContent = formatKRW(target);
+    $('kb-return2').textContent = ret.toFixed(1);
+    $('kb-invest-target').textContent = formatKRW(investTarget);
+    $('kb-monthly-savings').textContent = formatKRW(monthlySavings);
+    $('kb-total-months').textContent = (years * 12).toLocaleString();
+    $('kb-half-savings').textContent = formatKRW(monthlySavings / 2);
+
+    var badge = $('kb-benz-badge');
+    if (useBenz) {
+      badge.style.display = 'inline-block';
+      $('kb-benz-target').textContent = formatKRW(investTarget);
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  ['kb-currentAge','kb-retireAge','kb-monthlyExpense','kb-inflation','kb-withdrawal','kb-return'].forEach(function(id){
+    var el = $(id);
+    if (el) el.addEventListener('input', calc);
+  });
+
+  var toggle = $('kb-benz-toggle');
+  function toggleBenz() {
+    useBenz = !useBenz;
+    toggle.classList.toggle('active', useBenz);
+    toggle.setAttribute('aria-pressed', useBenz ? 'true' : 'false');
+    calc();
+  }
+  toggle.addEventListener('click', toggleBenz);
+  toggle.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleBenz();
+    }
+  });
+
+  calc();
+})();
+</script>
+
+</body>
+</html>`;
