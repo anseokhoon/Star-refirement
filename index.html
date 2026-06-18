@@ -1,21 +1,4 @@
-// =====================================================
-// KB스타웰스매니저 은퇴 설계 계산기 - Cloudflare Worker
-// =====================================================
-
-export default {
-  async fetch(request, env, ctx) {
-    return new Response(HTML, {
-      headers: {
-        "content-type": "text/html;charset=UTF-8",
-        "cache-control": "public, max-age=300",
-        "x-content-type-options": "nosniff",
-      },
-    });
-  },
-};
-
-// HTML은 String.raw로 감싸서 백슬래시/달러기호 충돌을 원천 차단
-const HTML = String.raw`<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
