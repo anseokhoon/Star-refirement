@@ -93,6 +93,22 @@ const HTML = `<!DOCTYPE html>
                 });
             }, [currentAge, retirementAge, monthlyExpense, inflationRate, withdrawalRate, investmentReturnRate, useBenzMark]);
 
+            const benzLabelClass = useBenzMark 
+                ? 'flex items-center cursor-pointer p-4 sm:p-5 rounded-xl border-2 transition-all shadow-sm border-[#FFCC00] bg-yellow-50/50'
+                : 'flex items-center cursor-pointer p-4 sm:p-5 rounded-xl border-2 transition-all shadow-sm border-gray-200 bg-white hover:border-gray-300';
+            
+            const benzToggleBg = useBenzMark
+                ? 'block w-12 h-7 rounded-full transition-colors bg-[#FFCC00]'
+                : 'block w-12 h-7 rounded-full transition-colors bg-gray-300';
+            
+            const benzToggleDot = useBenzMark
+                ? 'absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-200 translate-x-5 shadow-sm'
+                : 'absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-200';
+
+            const benzTextClass = useBenzMark
+                ? 'block text-sm sm:text-base font-bold text-[#3b3a39]'
+                : 'block text-sm sm:text-base font-bold text-gray-700';
+
             return (
                 <div className="min-h-screen p-3 sm:p-4 md:p-8 font-sans text-gray-800">
                     <div className="max-w-5xl mx-auto space-y-5 sm:space-y-6">
@@ -186,14 +202,14 @@ const HTML = `<!DOCTYPE html>
                                         </div>
                                     </div>
 
-                                    <label className={\`flex items-center cursor-pointer p-4 sm:p-5 rounded-xl border-2 transition-all shadow-sm \${useBenzMark ? 'border-[#FFCC00] bg-yellow-50/50' : 'border-gray-200 bg-white hover:border-gray-300'}\`}>
+                                    <label className={benzLabelClass}>
                                         <div className="relative flex-shrink-0">
                                             <input type="checkbox" className="sr-only" checked={useBenzMark} onChange={() => setUseBenzMark(!useBenzMark)} />
-                                            <div className={\`block w-12 h-7 rounded-full transition-colors \${useBenzMark ? 'bg-[#FFCC00]' : 'bg-gray-300'}\`}></div>
-                                            <div className={\`absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-200 \${useBenzMark ? 'translate-x-5 shadow-sm' : ''}\`}></div>
+                                            <div className={benzToggleBg}></div>
+                                            <div className={benzToggleDot}></div>
                                         </div>
                                         <div className="ml-4">
-                                            <span className={\`block text-sm sm:text-base font-bold \${useBenzMark ? 'text-[#3b3a39]' : 'text-gray-700'}\`}>벤츠 마크 적용 (자산 3분할)</span>
+                                            <span className={benzTextClass}>벤츠 마크 적용 (자산 3분할)</span>
                                             <span className="block text-xs sm:text-sm text-gray-500 mt-1">부동산/현금 외, 목표액의 1/3만 투자로 준비</span>
                                         </div>
                                     </label>
