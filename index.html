@@ -1,4 +1,21 @@
-<!DOCTYPE html>
+// =====================================================
+// KB스타웰스매니저 은퇴 설계 계산기 - Cloudflare Worker
+// =====================================================
+
+export default {
+  async fetch(request, env, ctx) {
+    return new Response(HTML, {
+      headers: {
+        "content-type": "text/html;charset=UTF-8",
+        "cache-control": "public, max-age=300",
+        "x-content-type-options": "nosniff",
+      },
+    });
+  },
+};
+
+// HTML은 String.raw로 감싸서 백슬래시/달러기호 충돌을 원천 차단
+const HTML = String.raw`<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -38,6 +55,15 @@
   .kb-title { font-size: 28px; font-weight: 700; margin: 6px 0 8px; position: relative; letter-spacing: -0.025em; }
   @media (min-width: 768px) { .kb-title { font-size: 34px; } }
   .kb-subtitle { color: #d1d5db; font-size: 14px; font-weight: 300; position: relative; }
+  .kb-years-box {
+    margin-top: 20px; background: rgba(42,41,40,0.7);
+    padding: 14px 20px; border-radius: 14px;
+    border: 1px solid #4a4948; display: inline-flex;
+    align-items: center; gap: 10px; position: relative;
+  }
+  .kb-years-label { font-size: 13px; color: #d1d5db; }
+  .kb-years-val { font-size: 30px; font-weight: 800; color: #FFCC00; letter-spacing: -0.02em; }
+  .kb-years-unit { font-size: 16px; color: #d1d5db; font-weight: 500; }
 
   .kb-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
   @media (min-width: 1024px) { .kb-grid { grid-template-columns: 5fr 7fr; gap: 20px; } }
@@ -59,12 +85,7 @@
     font-size: 14px; font-weight: 800; flex-shrink: 0;
   }
 
-  /* 입력부 가로 배치 스타일 */
-  .kb-input-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 16px; }
-  @media (min-width: 600px) {
-    .kb-input-grid { grid-template-columns: 1fr 1fr 1.5fr; }
-  }
-  
+  .kb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
   .kb-field-label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 8px; }
   .kb-input-wrap {
     display: flex; border: 1.5px solid #d1d5db; border-radius: 10px;
@@ -81,15 +102,7 @@
     color: #4b5563; font-weight: 500; font-size: 14px;
     border-left: 1px solid #e5e7eb; white-space: nowrap;
   }
-
-  /* 남은 기간 표시줄 */
-  .kb-years-inline {
-    background: linear-gradient(135deg, #fefce8 0%, #fffbeb 100%);
-    border: 1px solid #fde047; color: #854d0e;
-    padding: 12px 16px; border-radius: 10px; display: flex; justify-content: center;
-    align-items: center; gap: 10px; font-size: 14px; font-weight: 600; margin-bottom: 24px;
-  }
-  .kb-years-inline .val { font-size: 20px; font-weight: 800; color: #ca8a04; }
+  .kb-input-big input { font-size: 22px; font-weight: 800; color: #3b3a39; padding: 14px 12px; }
 
   .kb-assumptions {
     background: #f9fafb; padding: 18px; border-radius: 14px;
@@ -163,16 +176,18 @@
   .kb-emphasis { font-weight: 700; color: #3b3a39; }
   .kb-underline { font-weight: 700; border-bottom: 2px solid #FFCC00; padding-bottom: 1px; }
 
-  /* 가로형 필요생활비 표시줄 */
-  .kb-future-bar {
-    display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center;
-    background: #f9fafb; padding: 18px; border-radius: 12px; border: 1px solid #e5e7eb; gap: 14px;
+  .kb-result-row { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+  @media (min-width: 600px) { .kb-result-row { flex-direction: row; align-items: center; gap: 12px; } }
+  .kb-result-box {
+    background: #f9fafb; padding: 16px; border-radius: 12px;
+    border: 1px solid #e5e7eb; flex: 1; text-align: center;
   }
-  .kb-future-item { display: flex; align-items: center; gap: 8px; }
-  .kb-future-label { font-size: 14px; color: #6b7280; font-weight: 600; }
-  .kb-future-val { font-size: 22px; font-weight: 700; color: #1f2937; }
-  .kb-future-val.gold { color: #854d0e; }
-  .kb-future-sep { font-weight: 700; color: #d1d5db; font-size: 14px; margin: 0 4px; }
+  .kb-result-box.gold { background: #fcfbf9; border-color: #e8e4db; }
+  .kb-result-label { font-size: 12px; color: #6b7280; margin-bottom: 6px; }
+  .kb-result-box.gold .kb-result-label { color: #8c8273; }
+  .kb-result-val { font-size: 22px; font-weight: 700; color: #1f2937; letter-spacing: -0.02em; }
+  .kb-result-box.gold .kb-result-val { color: #5c5446; }
+  .kb-mult { font-weight: 700; color: #d1d5db; text-align: center; font-size: 14px; }
 
   .kb-target-box {
     background: linear-gradient(135deg, #fbfaf8 0%, #faf8f3 100%);
@@ -209,4 +224,272 @@
   }
   @media (min-width: 768px) { .kb-action-val { font-size: 44px; } }
   .kb-period-box {
-    background: #2a292
+    background: #2a2928; padding: 14px 20px; border-radius: 12px;
+    border: 1px solid #4b5563; text-align: center;
+  }
+  .kb-period-label { font-size: 11px; color: #9ca3af; margin-bottom: 4px; }
+  .kb-period-val { font-size: 18px; font-weight: 700; color: #fff; }
+
+  .kb-tip-box {
+    margin-top: 20px; padding: 16px;
+    background: linear-gradient(to right, #1f2937, #2a2928);
+    border-radius: 12px; border-left: 4px solid #FFCC00;
+    color: #e5e7eb; font-size: 14px; line-height: 1.7; word-break: keep-all;
+  }
+  .kb-tip-amount { color: #FFCC00; font-weight: 700; font-size: 16px; margin: 0 4px; }
+
+  .kb-disclaimer {
+    text-align: center; font-size: 11px; color: #9ca3af;
+    margin-top: 28px; padding: 0 12px; word-break: keep-all;
+  }
+</style>
+</head>
+<body>
+
+<div class="kb-container">
+
+  <header class="kb-header">
+    <div class="kb-brand">
+      <span class="kb-brand-star">★</span>
+      <span class="kb-brand-text">KB<span class="light">스타</span>웰스매니저</span>
+    </div>
+    <h1 class="kb-title">은퇴 설계 계산기</h1>
+    <p class="kb-subtitle">고객님의 완벽한 노후를 위한 맞춤형 재무 로드맵</p>
+    <div class="kb-years-box">
+      <span class="kb-years-label">은퇴까지 남은 기간</span>
+      <span class="kb-years-val" id="kb-years">22</span><span class="kb-years-unit">년</span>
+    </div>
+  </header>
+
+  <main class="kb-grid">
+
+    <section class="kb-card">
+      <h2 class="kb-card-title">
+        <span class="kb-num-circle">1</span>
+        고객 재무 정보 입력
+      </h2>
+
+      <div class="kb-row">
+        <div>
+          <label class="kb-field-label" for="kb-currentAge">현재 나이</label>
+          <div class="kb-input-wrap">
+            <input type="number" id="kb-currentAge" value="40" min="0" max="100">
+            <div class="kb-input-suffix">세</div>
+          </div>
+        </div>
+        <div>
+          <label class="kb-field-label" for="kb-retireAge">은퇴 예상 나이</label>
+          <div class="kb-input-wrap">
+            <input type="number" id="kb-retireAge" value="62" min="0" max="100">
+            <div class="kb-input-suffix">세</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 4px;">
+        <label class="kb-field-label" for="kb-monthlyExpense">필요 생활비 (현재 가치 기준)</label>
+        <div class="kb-input-wrap kb-input-big">
+          <input type="number" id="kb-monthlyExpense" value="500" min="0">
+          <div class="kb-input-suffix">만 원 / 월</div>
+        </div>
+      </div>
+
+      <div class="kb-assumptions">
+        <div class="kb-assumptions-title">⚙ 가정 변수 (Assumptions)</div>
+
+        <div class="kb-assumption-row">
+          <label class="kb-assumption-label" for="kb-inflation">물가 상승률</label>
+          <div class="kb-small-input">
+            <input type="number" step="0.1" id="kb-inflation" value="3.0">
+            <div class="kb-input-suffix">%</div>
+          </div>
+        </div>
+
+        <div class="kb-assumption-row">
+          <label class="kb-assumption-label" for="kb-withdrawal">은퇴 후 인출률</label>
+          <div class="kb-small-input">
+            <input type="number" step="0.1" id="kb-withdrawal" value="5.0">
+            <div class="kb-input-suffix">%</div>
+          </div>
+        </div>
+
+        <div class="kb-assumption-row">
+          <label class="kb-assumption-label" for="kb-return">투자 수익률</label>
+          <div class="kb-small-input">
+            <input type="number" step="0.1" id="kb-return" value="7.0">
+            <div class="kb-input-suffix">%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kb-toggle-card" id="kb-benz-toggle" role="button" tabindex="0" aria-pressed="false">
+        <div class="kb-toggle-switch">
+          <div class="kb-toggle-knob"></div>
+        </div>
+        <div class="kb-toggle-text">
+          <span class="kb-toggle-title">벤츠 마크 적용 (자산 3분할)</span>
+          <span class="kb-toggle-desc">부동산/현금 외, 목표액의 1/3만 투자로 준비</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <article class="kb-step">
+        <div class="kb-step-tag">Step 1. 물가상승 반영</div>
+        <p class="kb-step-text">
+          <span class="kb-emphasis"><span id="kb-years2">22</span>년 후</span> 은퇴 시점에
+          현재의 <span class="kb-underline"><span id="kb-cur-expense">500</span>만원</span>과 동일한 가치를 지니려면?
+        </p>
+        <div class="kb-result-row">
+          <div class="kb-result-box">
+            <div class="kb-result-label">필요 월 생활비</div>
+            <div class="kb-result-val" id="kb-future-monthly">-</div>
+          </div>
+          <div class="kb-mult">× 12 =</div>
+          <div class="kb-result-box gold">
+            <div class="kb-result-label">필요 연 생활비</div>
+            <div class="kb-result-val" id="kb-future-annual">-</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="kb-step step2">
+        <div class="kb-step-tag">Step 2. 목표 은퇴 자금 산출</div>
+        <p class="kb-step-text">
+          원금을 깎아먹지 않고 매년 <span style="font-weight:700;color:#5c5446;" id="kb-future-annual2">-</span>의 이자 수익을 얻기 위해 모아야 할 총 자산입니다.
+          <span style="color:#6b7280;font-size:13px;">(수익률 <span id="kb-withdrawal2">5.0</span>%)</span>
+        </p>
+        <div class="kb-target-box">
+          <div class="kb-target-label">필요한 총 목표 은퇴 자금</div>
+          <div class="kb-target-val" id="kb-target">-</div>
+          <div class="kb-benz-badge" id="kb-benz-badge" style="display:none;">
+            💡 벤츠 마크 반영: 금융투자 목표액 <strong id="kb-benz-target">-</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="kb-step step3">
+        <div class="kb-action-tag">KB Action Plan</div>
+        <div class="kb-step-tag">Step 3. 솔루션 제안</div>
+        <p class="kb-step-text">
+          <span id="kb-years3">22</span>년 동안 연 <span id="kb-return2">7.0</span>%의 수익률로
+          <span style="color:#fff;font-weight:700;" id="kb-invest-target">-</span>을 모으기 위해 당장 시작해야 할 매월 저축액입니다.
+        </p>
+        <div class="kb-action-row">
+          <div>
+            <div class="kb-action-label">매월 투자해야 할 금액</div>
+            <div class="kb-action-val" id="kb-monthly-savings">-</div>
+          </div>
+          <div class="kb-period-box">
+            <div class="kb-period-label">총 투자 기간</div>
+            <div class="kb-period-val"><span id="kb-total-months">-</span>개월</div>
+          </div>
+        </div>
+        <div class="kb-tip-box">
+          "고객님, 부담스럽게 무리하지 마시고 여유 자금의 절반인
+          <span class="kb-tip-amount">월 <span id="kb-half-savings">-</span></span>
+          부터 시작하시죠. 점진적으로 늘려가도록 곁에서 돕겠습니다."
+        </div>
+      </article>
+    </section>
+
+  </main>
+
+  <p class="kb-disclaimer">
+    * 본 계산기는 세금, 수수료, 연금 수령 방식 등을 제외한 단순 복리 모델을 기반으로 하며, 실제 수익을 보장하지 않습니다.
+  </p>
+
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  function $(id) { return document.getElementById(id); }
+
+  function formatKRW(num) {
+    if (num === 0 || isNaN(num) || num == null) return '0원';
+    var actual = num * 10000;
+    var uk = Math.floor(actual / 100000000);
+    var man = Math.floor((actual % 100000000) / 10000);
+    var result = '';
+    if (uk > 0) result += uk.toLocaleString() + '억 ';
+    if (man > 0) result += man.toLocaleString() + '만 ';
+    if (uk === 0 && man === 0) return Math.floor(actual).toLocaleString() + '원';
+    return result.trim() + '원';
+  }
+
+  var useBenz = false;
+
+  function calc() {
+    var currentAge = Number($('kb-currentAge').value) || 0;
+    var retireAge = Number($('kb-retireAge').value) || 0;
+    var monthlyExpense = Number($('kb-monthlyExpense').value) || 0;
+    var inflation = Number($('kb-inflation').value) || 0;
+    var withdrawal = Number($('kb-withdrawal').value) || 0;
+    var ret = Number($('kb-return').value) || 0;
+
+    var years = Math.max(0, retireAge - currentAge);
+    var futureMonthly = monthlyExpense * Math.pow(1 + inflation/100, years);
+    var futureAnnual = futureMonthly * 12;
+    var target = withdrawal > 0 ? futureAnnual / (withdrawal/100) : 0;
+    var investTarget = useBenz ? target / 3 : target;
+
+    var r = ret / 100 / 12;
+    var n = years * 12;
+    var monthlySavings = 0;
+    if (n > 0) {
+      if (r === 0) monthlySavings = investTarget / n;
+      else monthlySavings = (investTarget * r) / (Math.pow(1 + r, n) - 1);
+    }
+
+    $('kb-years').textContent = years;
+    $('kb-years2').textContent = years;
+    $('kb-years3').textContent = years;
+    $('kb-cur-expense').textContent = Math.round(monthlyExpense).toLocaleString();
+    $('kb-future-monthly').textContent = formatKRW(futureMonthly);
+    $('kb-future-annual').textContent = formatKRW(futureAnnual);
+    $('kb-future-annual2').textContent = formatKRW(futureAnnual);
+    $('kb-withdrawal2').textContent = withdrawal.toFixed(1);
+    $('kb-target').textContent = formatKRW(target);
+    $('kb-return2').textContent = ret.toFixed(1);
+    $('kb-invest-target').textContent = formatKRW(investTarget);
+    $('kb-monthly-savings').textContent = formatKRW(monthlySavings);
+    $('kb-total-months').textContent = (years * 12).toLocaleString();
+    $('kb-half-savings').textContent = formatKRW(monthlySavings / 2);
+
+    var badge = $('kb-benz-badge');
+    if (useBenz) {
+      badge.style.display = 'inline-block';
+      $('kb-benz-target').textContent = formatKRW(investTarget);
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  ['kb-currentAge','kb-retireAge','kb-monthlyExpense','kb-inflation','kb-withdrawal','kb-return'].forEach(function(id){
+    var el = $(id);
+    if (el) el.addEventListener('input', calc);
+  });
+
+  var toggle = $('kb-benz-toggle');
+  function toggleBenz() {
+    useBenz = !useBenz;
+    toggle.classList.toggle('active', useBenz);
+    toggle.setAttribute('aria-pressed', useBenz ? 'true' : 'false');
+    calc();
+  }
+  toggle.addEventListener('click', toggleBenz);
+  toggle.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleBenz();
+    }
+  });
+
+  calc();
+})();
+</script>
+
+</body>
+</html>`;
